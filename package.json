@@ -2,5 +2,7 @@
   "name": "node-ssr-react19",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": "https://github.com/sandeep3690Butte/node-r19-ssr.git",
+  "author": "sandeep Butte <sandeep.butte@nobroker.in>"
 }
