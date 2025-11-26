@@ -6,14 +6,17 @@ import { renderToPipeableStream } from 'react-dom/server';
 import { StaticRouter } from 'react-router-dom/server';
 import App from './../client/App';
 import { ChunkExtractor } from '@loadable/server';
+import { routes } from '../client/AppRouteV6';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use('/static', express.static(path.resolve(__dirname, '../client')));
 
-app.get(/.*/, (req, res) => {
-  try {
+routes.forEach((route) => {
+  console.log(`Route path: ${route.path}`);
+  app.get(route.path, (req, res) => {
+     try {
     const statsFile = path.resolve(process.cwd(), 'dist','client/loadable-stats.json');
 
     if (!fs.existsSync(statsFile)) {
@@ -53,9 +56,14 @@ app.get(/.*/, (req, res) => {
           }
         </style>
         ${styles}
-      </head>`
+      </head>
+      `
       )
     );
+
+    // res.write(
+    //     htmlEnd.replace('</body>', `${scripts}\n</body>`)
+    //   );
 
     const { pipe, abort } = renderToPipeableStream(jsx, {
       onShellReady() {
@@ -63,14 +71,14 @@ app.get(/.*/, (req, res) => {
         pipe(res);
 
         // When React is done streaming, append closing tags manually
+      },
+      onAllReady() {
         res.write(
           htmlEnd.replace('</body>', `${scripts}\n</body>`)
         );
-
         // 3️⃣ Close response
         res.end();
       },
-
       onError(err) {
         console.error(err);
       },
@@ -81,7 +89,8 @@ app.get(/.*/, (req, res) => {
     console.error(err);
     res.status(500).send('Internal Server Error');
   }
-});
+  })
+})
 
 app.listen(PORT, () =>
   console.log(`Server listening on http://localhost:${PORT}`)
